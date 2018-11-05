@@ -151,10 +151,37 @@ public class Recommender
 	}
 
 	private int predictPair(HashSet<Integer> anItemset, Integer j) {
-		/* TODO: implement this method */
-		
+		/* TODO: implement this method */		
 		// Compute support, confidence, or lift. Based on their threshold, decide how to predict. Return 1 when metrics are satisfied by threshold, otherwise 0.
-		return 0 ;
+		 if (anItemset.size() < 1)
+		     return 0 ;
+
+		  int evidence = 0 ;
+		  for (Integer it : anItemset) {
+		     Integer numBasketsForI = freqItemsetsWithSize1.get(it) ;
+		    
+		     if (numBasketsForI == null)
+		        continue ;
+		      
+		     FrequentItemsetSize2 item;
+		     if(it.intValue() <= j.intValue())
+		        item = new FrequentItemsetSize2(it.intValue(), j.intValue()) ;   
+		     else item = new FrequentItemsetSize2(j.intValue(), it.intValue()) ;   
+		     Integer numBasketsForIUnionj  = freqItemsetsWithSize2.get(item) ;
+		     if (numBasketsForIUnionj  == null)
+		        continue ;
+
+		     if (numBasketsForIUnionj .intValue() < minSupport)
+		        continue ;
+
+		     if ((double)numBasketsForIUnionj  / (double)numBasketsForI >= confidence_threshold_rulesize_2) 
+		        evidence++ ;
+		  }
+
+		  if (evidence >= min_evidence_3) 
+		     return 1 ;
+
+		return 0;
 	}
 
 	private int predictTriple(HashSet<Integer> anItemset, Integer j) { // association rule anItemset (I) -> j
@@ -244,16 +271,48 @@ class FrequentItemsetSize2 implements Comparable
 class FrequentItemsetSize3 implements Comparable 
 {
 	int [] items ;
+	int first;
+	int second;
+	int third;
 
 	FrequentItemsetSize3(Set<Integer> s) {
-		/* TODO: implement this method */
-		
+		/* TODO: implement this method */		
 		// values in s must be sorted and save into items array
+		Integer [] items = s.toArray(new Integer[3]) ;
+
+	      Set<Integer> mset = new TreeSet<Integer>();
+
+	      mset.add(items[0]);
+	      mset.add(items[1]);
+	      mset.add(items[2]);
+
+	      Object[] vList = mset.toArray();
+
+	      this.first = (int)vList[0];
+	      this.second = (int)vList[1];
+	      this.third = (int)vList[2];
+		
+		
 	}
 
 	@Override
 	public int compareTo(Object obj) {  // this method is used for sorting when using TreeMap
 		/* TODO: implement this method */
-		return 0 ;
-	}
+		FrequentItemsetSize3 p = (FrequentItemsetSize3) obj ;
+
+	      if (this.first < p.first)
+	         return -1 ;
+	      if (this.first > p.first)
+	         return 1 ;
+
+	      else {
+	         if (this.second < p.second)
+	            return -1 ;
+	         if (this.second > p.second)
+	            return 1 ;
+
+	         return (this.third - p.third) ;
+	      }
+	      
+	   }
 }
